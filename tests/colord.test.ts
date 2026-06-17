@@ -2,6 +2,7 @@
 import { colord, random, getFormat, Colord, AnyColor } from "../src/";
 import { fixtures, lime, saturationLevels } from "./fixtures";
 import { clampHue, round, roundHue } from "../src/helpers";
+import { ALPHA_PRECISION } from "../src/constants";
 
 it("Converts between HEX, RGB, HSL and HSV color models properly", () => {
   for (const fixture of fixtures) {
@@ -126,7 +127,7 @@ it("Parses modern HSL functional notations", () => {
 
 it("Supports HEX4 and HEX8 color models", () => {
   expect(colord("#ffffffff").toRgb()).toMatchObject({ r: 255, g: 255, b: 255, a: 1 });
-  expect(colord("#80808080").toRgb()).toMatchObject({ r: 128, g: 128, b: 128, a: 0.5 });
+  expect(colord("#80808080").toRgb()).toMatchObject({ r: 128, g: 128, b: 128, a: 0.502 });
   expect(colord("#AAAF").toRgb()).toMatchObject({ r: 170, g: 170, b: 170, a: 1 });
   expect(colord("#5550").toRgb()).toMatchObject({ r: 85, g: 85, b: 85, a: 0 });
   expect(colord({ r: 255, g: 255, b: 255, a: 1 }).toHex()).toBe("#ffffff");
@@ -146,7 +147,7 @@ it("Parses and serializes every HEX digit exactly", () => {
       r: byte,
       g: byte,
       b: byte,
-      a: round(byte / 255, 2),
+      a: round(byte / 255, ALPHA_PRECISION),
     });
   }
 
@@ -164,7 +165,7 @@ it("Parses and serializes every HEX digit exactly", () => {
       r: 0,
       g: 0,
       b: 0,
-      a: round(byte / 255, 2),
+      a: round(byte / 255, ALPHA_PRECISION),
     });
   }
 
@@ -179,6 +180,14 @@ it("Parses and serializes every HEX digit exactly", () => {
   expect(colord("#12345g").isValid()).toBe(false);
   expect(colord("#-12345").isValid()).toBe(false);
   expect(colord("# 12345").isValid()).toBe(false);
+});
+
+it("Round-trips a HEX8 alpha channel without drifting", () => {
+  // The alpha byte of a HEX8 string is 8-bit; parsing must keep enough
+  // precision (ALPHA_PRECISION) to re-encode the very same byte.
+  ["#476d5e55", "#80808080", "#0a141e7f", "#ffffff01", "#000000fe"].forEach((hex) => {
+    expect(colord(hex).toHex()).toBe(hex);
+  });
 });
 
 it("Ignores a case and extra whitespace", () => {

@@ -1,5 +1,6 @@
 import { RgbaColor } from "../types";
 import { clamp, round } from "../helpers";
+import { ALPHA_PRECISION } from "../constants";
 import { roundRgba } from "./rgb";
 
 const hexMatcher = /^#([0-9a-f]{3,8})$/i;
@@ -38,7 +39,7 @@ export const parseHex = (hex: string): RgbaColor | null => {
       r: digitAt(hex, 1) * 0x11,
       g: digitAt(hex, 2) * 0x11,
       b: digitAt(hex, 3) * 0x11,
-      a: length === 5 ? round((digitAt(hex, 4) * 0x11) / 255, 2) : 1,
+      a: length === 5 ? round((digitAt(hex, 4) * 0x11) / 255, ALPHA_PRECISION) : 1,
     };
   }
 
@@ -47,7 +48,7 @@ export const parseHex = (hex: string): RgbaColor | null => {
       r: byteAt(hex, 1),
       g: byteAt(hex, 3),
       b: byteAt(hex, 5),
-      a: length === 9 ? round(byteAt(hex, 7) / 255, 2) : 1,
+      a: length === 9 ? round(byteAt(hex, 7) / 255, ALPHA_PRECISION) : 1,
     };
   }
 
